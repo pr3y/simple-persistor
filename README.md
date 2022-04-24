@@ -11,7 +11,7 @@ Collection of some Unix persistion methods created for studying and facilitate o
 
 
 ## Privesc
-if the target falls for the fake sudo alias, a file will be created in /dev/shm with the root password and will be added SUID permissions to python, which you could use the following command to get root permissions: 
+if the target falls for the fake sudo alias, a file will be created in $HOME/.local/share with the root password and will be added SUID permissions to python, which you could use the following command to get root permissions: 
 
 ```sh
 $(which python) -c 'import os; os.execl("/bin/sh", "sh", "-p")'
