@@ -3,6 +3,7 @@
 Collection of some Unix persistion methods created for studying and facilitate on RedTeam operations
 
 ## Contains
+- systemd user persist
 - crontab persist
 - sshkey persist
 - sudo backdoor on .bashrc file
